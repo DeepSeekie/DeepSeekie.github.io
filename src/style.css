@@ -1,0 +1,12 @@
+:root {
+  --canvas: #F4F5F2; --surface: #FFFFFF; --terminal-bg: #050505; --terminal-text: #E0E0E0;
+  --terminal-blue: #00C3FF; --fg: #111111; --fg-mid: #555555; --fg-dim: #888888;
+  --line: #D1D1D1; --line-strong: #111111; --blue: #0098DC; --blue-bright: #00C3FF;
+  --blue-deep: #006F9E; --blue-soft: rgba(0, 152, 220, 0.15);
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body, #app { width: 100%; height: 100%; background: var(--canvas); font-family: var(--font-sans); color: var(--fg); overflow: hidden; }
+::-webkit-scrollbar { display: none; }
