@@ -25,11 +25,8 @@
       <div class="hl-data">LINK: <span class="text-cyan">STABLE</span></div>
     </div>
 
-    <!-- 3. HUD: 左下角版本号与音频条 -->
+    <!-- 3. HUD: 左下角版本号 (已去除音频条) -->
     <div class="hud-corner hud-bl">
-      <div class="audio-bars">
-        <span></span><span></span><span></span><span></span>
-      </div>
       <div class="hl-data">VER 0.1.0 // BUILD 2024.05</div>
       <div class="hl-data text-faint">[ 01 / 04 ] BOOT_SEQUENCE</div>
     </div>
@@ -72,7 +69,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 身份验证弹窗 (亮色版) -->
+      <!-- 身份验证弹窗 (亮色工业风) -->
       <!-- ========================================== -->
       <transition name="pop">
         <div class="auth-card" v-if="phase === 'auth_wait' || phase === 'auth_scanning' || phase === 'welcome'">
@@ -97,20 +94,20 @@
               <div v-for="(line, idx) in scanLogs" :key="idx" class="log-line">{{ line }}</div>
             </div>
 
-            <!-- 进度条 (极细线) -->
+            <!-- 进度条 -->
             <div class="auth-bar">
               <div class="bar-fill" :style="{ width: scanPct + '%' }"></div>
             </div>
 
-            <!-- 按钮 -->
+            <!-- 按钮逻辑：等待点击 -> 扫描中 -> 等待点击进入 -->
             <button class="auth-btn" v-if="phase === 'auth_wait'" @click.stop="startScan">
               [ GRANT_ACCESS ]
             </button>
             <button class="auth-btn disabled" v-else-if="phase === 'auth_scanning'">
               [ SCANNING... ]
             </button>
-            <button class="auth-btn success" v-else-if="phase === 'welcome'">
-              [ ACCESS_GRANTED ]
+            <button class="auth-btn success" v-else-if="phase === 'welcome'" @click.stop="enterSystem">
+              [ ENTER_TERMINAL ]
             </button>
           </div>
         </div>
@@ -144,6 +141,7 @@ const clearTimers = () => {
   timers = [];
 };
 
+// 点击开始扫描
 const startScan = () => {
   if (phase.value !== 'auth_wait') return;
   phase.value = 'auth_scanning';
@@ -172,31 +170,40 @@ const startScan = () => {
       clearInterval(interval);
       addLog(logPool[3]);
       setTimeout(() => {
+        // 扫描完成，进入 welcome 状态，但绝对不自动跳转！
         phase.value = 'welcome';
         systemStatus.value = 'AUTHORIZED';
         progressWidth.value = '100%';
-        setTimeout(() => {
-          leaving.value = true;
-          setTimeout(() => emit('done'), 800); // 淡出
-        }, 2000);
       }, 600);
     }
   }, 100);
 };
 
+// 点击进入主系统
+const enterSystem = () => {
+  if (phase.value !== 'welcome') return;
+  leaving.value = true;
+  setTimeout(() => emit('done'), 800); // 触发淡出并通知父组件
+};
+
+// 全局点击判定
 const onTap = () => {
   if (phase.value === 'auth_wait') {
     startScan();
+  } else if (phase.value === 'welcome') {
+    enterSystem();
   }
 };
 
 onMounted(() => {
+  // 启动系统自检
   timers.push(setTimeout(() => {
     systemStatus.value = 'SELF_TEST_PASS';
     progressWidth.value = '30%';
     phase.value = 'system_check';
   }, 1500));
 
+  // 进入等待状态，此后将永久停留，直到用户点击
   timers.push(setTimeout(() => {
     systemStatus.value = 'AWAITING_INPUT';
     progressWidth.value = '50%';
@@ -209,11 +216,11 @@ onUnmounted(() => clearTimers());
 
 <style scoped>
 /* ============================================================
-   基础层：恢复亮色纸感
+   基础层：亮色纸感
    ============================================================ */
 #splash {
   position: fixed; inset: 0; z-index: 100;
-  background: var(--canvas); /* 回到 #F4F5F2 */
+  background: var(--canvas);
   color: var(--fg);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.8s ease;
@@ -222,7 +229,7 @@ onUnmounted(() => clearTimers());
 }
 #splash.is-leaving { opacity: 0; pointer-events: none; }
 
-/* 1. 工业图纸网格背景 (浅色) */
+/* 1. 工业图纸网格背景 */
 .bg-grid {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background-image: 
@@ -238,7 +245,7 @@ onUnmounted(() => clearTimers());
   background-size: 4px 4px; opacity: 0.6;
 }
 
-/* 背景横向数据流 (极淡的青色细线) */
+/* 背景横向数据流 */
 .bg-data-stream { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .stream-line {
   position: absolute; left: -100%; width: 200%; height: 1px;
@@ -248,7 +255,7 @@ onUnmounted(() => clearTimers());
 @keyframes flowRight { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
 
 /* ============================================================
-   HUD 四角信息 (恢复深色字体与重色强调)
+   HUD 四角信息
    ============================================================ */
 .hud-corner { position: absolute; z-index: 10; font-size: 10px; line-height: 1.8; color: var(--fg-mid); letter-spacing: 1px; }
 .hud-tl { top: 30px; left: 30px; }
@@ -264,20 +271,11 @@ onUnmounted(() => clearTimers());
 .blink { animation: blink 1s step-end infinite; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* 音频跳动条 (经典深蓝) */
-.audio-bars { display: flex; gap: 3px; align-items: flex-end; height: 16px; margin-bottom: 8px; }
-.audio-bars span { display: block; width: 3px; background: var(--blue); }
-.audio-bars span:nth-child(1) { height: 60%; animation: bounce 1s infinite alternate; }
-.audio-bars span:nth-child(2) { height: 100%; animation: bounce 1.2s infinite alternate; }
-.audio-bars span:nth-child(3) { height: 40%; animation: bounce 0.8s infinite alternate; }
-.audio-bars span:nth-child(4) { height: 80%; animation: bounce 1.1s infinite alternate; }
-@keyframes bounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
-
 /* 底部总进度条 */
 .bottom-progress {
   position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(0,0,0,0.1); z-index: 10;
 }
-.progress-bar { height: 100%; background: var(--blue); transition: width 1s ease; box-shadow: 0 0 10px rgba(0,152,220,0.5); }
+.progress-bar { height: 100%; background: var(--blue); transition: width 0.8s ease; box-shadow: 0 0 10px rgba(0,152,220,0.5); }
 
 /* ============================================================
    核心舞台 (视觉中心)
@@ -287,7 +285,7 @@ onUnmounted(() => clearTimers());
   display: flex; align-items: center; justify-content: center;
 }
 
-/* 巨大的罗盘圆环 (深灰/黑色线条) */
+/* 巨大的罗盘圆环 */
 .rings {
   position: absolute; width: min(80vw, 600px); height: min(80vw, 600px); z-index: 1;
   opacity: 0.4; transition: opacity 1s ease;
@@ -298,12 +296,11 @@ onUnmounted(() => clearTimers());
 .ring-inner circle { stroke: var(--fg); stroke-width: 2; animation: spin 15s linear infinite; opacity: 0.2;}
 .ring-ticks circle { stroke: var(--line-strong); stroke-width: 2; opacity: 0.1; }
 
-/* 状态机控制圆环高亮 */
 .is-auth_wait .rings { opacity: 0.8; }
 .is-auth_scanning .rings { opacity: 1; }
 .is-welcome .rings { opacity: 0.4; }
 
-/* 中央大标题 (粗黑体) */
+/* 中央大标题 */
 .center-text {
   position: absolute; z-index: 5; text-align: center; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
@@ -322,15 +319,14 @@ onUnmounted(() => clearTimers());
 .is-welcome .center-text { transform: translateY(0); }
 
 /* ============================================================
-   身份验证弹窗 (亮色工业卡片，斜切角)
+   身份验证弹窗 (亮色工业卡片)
    ============================================================ */
 .auth-card {
   position: absolute; z-index: 10;
   width: min(90vw, 380px); background: var(--surface);
   border: 1px solid var(--fg);
-  /* 模拟斜切角 */
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.05); /* 实体阴影 */
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.05);
   display: flex; flex-direction: column;
 }
 .auth-head {
@@ -352,11 +348,11 @@ onUnmounted(() => clearTimers());
 .log-line { animation: typeIn 0.3s ease-out; }
 @keyframes typeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-/* 验证进度条 (极细) */
+/* 验证进度条 */
 .auth-bar { height: 2px; background: var(--line); width: 100%; margin-top: 4px; }
 .bar-fill { height: 100%; background: var(--blue); transition: width 0.1s linear; }
 
-/* 按钮 (黑底白字反色) */
+/* 按钮 */
 .auth-btn {
   margin-top: 10px; padding: 12px; background: transparent;
   border: 1px solid var(--fg); color: var(--fg); font-family: var(--font-mono); font-size: 12px; font-weight: 700;
@@ -365,6 +361,7 @@ onUnmounted(() => clearTimers());
 .auth-btn:hover:not(.disabled) { background: var(--fg); color: var(--surface); }
 .auth-btn.disabled { border-color: var(--line); color: var(--fg-dim); cursor: not-allowed; }
 .auth-btn.success { border-color: var(--blue); color: var(--blue); background: rgba(0, 152, 220, 0.05); }
+.auth-btn.success:hover { background: var(--blue); color: var(--surface); }
 
 /* 弹窗过渡动画 */
 .pop-enter-active { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
