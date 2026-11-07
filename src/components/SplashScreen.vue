@@ -1,11 +1,11 @@
 <template>
   <div id="splash" :class="{ 'is-leaving': leaving }" @pointerdown="onTap" @keydown.enter="onTap">
     
-    <!-- 1. 工业金属/网格背景 -->
-    <div class="bg-metal"></div>
+    <!-- 1. 工业图纸背景与网格 -->
     <div class="bg-grid"></div>
+    <div class="bg-halftone"></div>
     
-    <!-- 背景流动数据流 -->
+    <!-- 背景流动数据流 (淡青色细线) -->
     <div class="bg-data-stream">
       <div class="stream-line" v-for="i in 5" :key="i" :style="{ top: `${i * 20}%`, animationDelay: `${i * -2}s` }"></div>
     </div>
@@ -50,12 +50,13 @@
     <!-- 核心视觉区 -->
     <!-- ========================================== -->
     <div class="splash-stage" :class="'is-' + phase">
+      
       <!-- 巨大的底层罗盘/圆环 -->
       <svg class="rings" viewBox="0 0 400 400">
         <g class="ring ring-outer"><circle cx="200" cy="200" r="180"/></g>
         <g class="ring ring-mid"><circle cx="200" cy="200" r="140"/></g>
         <g class="ring ring-inner"><circle cx="200" cy="200" r="90"/></g>
-        <!-- 雷达刻度 -->
+        <!-- 刻度 -->
         <g class="ring ring-ticks"><circle cx="200" cy="200" r="160" stroke-dasharray="2 10"/></g>
       </svg>
 
@@ -71,7 +72,7 @@
       </div>
 
       <!-- ========================================== -->
-      <!-- 身份验证弹窗 (仅在 auth_wait 及之后出现) -->
+      <!-- 身份验证弹窗 (亮色版) -->
       <!-- ========================================== -->
       <transition name="pop">
         <div class="auth-card" v-if="phase === 'auth_wait' || phase === 'auth_scanning' || phase === 'welcome'">
@@ -96,7 +97,7 @@
               <div v-for="(line, idx) in scanLogs" :key="idx" class="log-line">{{ line }}</div>
             </div>
 
-            <!-- 进度条 -->
+            <!-- 进度条 (极细线) -->
             <div class="auth-bar">
               <div class="bar-fill" :style="{ width: scanPct + '%' }"></div>
             </div>
@@ -120,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const emit = defineEmits(['done']);
 
@@ -132,7 +133,6 @@ const progressWidth = ref('10%');
 // 验证相关状态
 const scanPct = ref(0);
 const scanLogs = ref([]);
-
 let timers = [];
 
 const addLog = (text) => {
@@ -177,8 +177,8 @@ const startScan = () => {
         progressWidth.value = '100%';
         setTimeout(() => {
           leaving.value = true;
-          setTimeout(() => emit('done'), 800); // 淡出后通知父组件
-        }, 2000); // 欢迎界面停留时间
+          setTimeout(() => emit('done'), 800); // 淡出
+        }, 2000);
       }, 600);
     }
   }, 100);
@@ -191,14 +191,12 @@ const onTap = () => {
 };
 
 onMounted(() => {
-  // 1. 启动自检阶段
   timers.push(setTimeout(() => {
     systemStatus.value = 'SELF_TEST_PASS';
     progressWidth.value = '30%';
     phase.value = 'system_check';
   }, 1500));
 
-  // 2. 进入待验证阶段
   timers.push(setTimeout(() => {
     systemStatus.value = 'AWAITING_INPUT';
     progressWidth.value = '50%';
@@ -206,19 +204,17 @@ onMounted(() => {
   }, 3000));
 });
 
-// 组件卸载清理定时器
-import { onUnmounted } from 'vue';
 onUnmounted(() => clearTimers());
 </script>
 
 <style scoped>
 /* ============================================================
-   基础层
+   基础层：恢复亮色纸感
    ============================================================ */
 #splash {
   position: fixed; inset: 0; z-index: 100;
-  background: #0A0A0C; /* 极深的暗色 */
-  color: #E0E0E0;
+  background: var(--canvas); /* 回到 #F4F5F2 */
+  color: var(--fg);
   display: flex; align-items: center; justify-content: center;
   transition: opacity 0.8s ease;
   cursor: pointer; overflow: hidden;
@@ -226,67 +222,51 @@ onUnmounted(() => clearTimers());
 }
 #splash.is-leaving { opacity: 0; pointer-events: none; }
 
-/* 1. 工业金属背景 (通过多重渐变模拟拉丝与墙壁) */
-.bg-metal {
-  position: absolute; inset: 0; z-index: 0;
-  background: 
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 100px 100px;
-  background-color: #0d0d10;
-  box-shadow: inset 0 0 200px rgba(0,0,0,0.9);
-}
-.bg-metal::after {
-  content: ""; position: absolute; inset: 0;
-  /* 模拟金属反光条纹 */
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(255,255,255,0.01) 2px,
-    rgba(255,255,255,0.01) 4px
-  );
-}
-
-/* 极细网格 */
+/* 1. 工业图纸网格背景 (浅色) */
 .bg-grid {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background-image: 
-    linear-gradient(rgba(0, 195, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 195, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 40px 40px;
-  mask-image: radial-gradient(circle at center, black 20%, transparent 70%);
 }
 
-/* 背景横向数据流 */
+/* 半调网点质感 */
+.bg-halftone {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 0.5px, transparent 0.5px);
+  background-size: 4px 4px; opacity: 0.6;
+}
+
+/* 背景横向数据流 (极淡的青色细线) */
 .bg-data-stream { position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none; }
 .stream-line {
   position: absolute; left: -100%; width: 200%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0,195,255,0.2), transparent);
-  animation: flowRight 4s linear infinite;
+  background: linear-gradient(90deg, transparent, rgba(0, 152, 220, 0.3), transparent);
+  animation: flowRight 6s linear infinite;
 }
 @keyframes flowRight { 0% { transform: translateX(0); } 100% { transform: translateX(50%); } }
 
 /* ============================================================
-   HUD 四角信息
+   HUD 四角信息 (恢复深色字体与重色强调)
    ============================================================ */
-.hud-corner { position: absolute; z-index: 10; font-size: 10px; line-height: 1.8; color: var(--fg-dim); letter-spacing: 1px; }
+.hud-corner { position: absolute; z-index: 10; font-size: 10px; line-height: 1.8; color: var(--fg-mid); letter-spacing: 1px; }
 .hud-tl { top: 30px; left: 30px; }
 .hud-tr { top: 30px; right: 30px; text-align: right; }
 .hud-bl { bottom: 30px; left: 30px; }
 .hud-br { bottom: 30px; right: 30px; text-align: right; }
 
-.hl-title { font-size: 12px; font-weight: 700; color: #FFF; letter-spacing: 2px; margin-bottom: 4px; }
-.hl-data { color: #666; margin-bottom: 2px; }
-.text-cyan { color: #00C3FF; }
-.text-faint { color: #444; margin-top: 10px; }
+.hl-title { font-size: 12px; font-weight: 900; color: var(--fg); letter-spacing: 2px; margin-bottom: 4px; }
+.hl-data { color: var(--fg-dim); margin-bottom: 2px; }
+.text-cyan { color: var(--blue); font-weight: 700; }
+.text-faint { color: #aaa; margin-top: 10px; }
 .mt-1 { margin-top: 6px; }
 .blink { animation: blink 1s step-end infinite; }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* 音频跳动条 */
+/* 音频跳动条 (经典深蓝) */
 .audio-bars { display: flex; gap: 3px; align-items: flex-end; height: 16px; margin-bottom: 8px; }
-.audio-bars span { display: block; width: 3px; background: #C8102E; /* 红色点缀 */ }
+.audio-bars span { display: block; width: 3px; background: var(--blue); }
 .audio-bars span:nth-child(1) { height: 60%; animation: bounce 1s infinite alternate; }
 .audio-bars span:nth-child(2) { height: 100%; animation: bounce 1.2s infinite alternate; }
 .audio-bars span:nth-child(3) { height: 40%; animation: bounce 0.8s infinite alternate; }
@@ -295,9 +275,9 @@ onUnmounted(() => clearTimers());
 
 /* 底部总进度条 */
 .bottom-progress {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.1); z-index: 10;
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(0,0,0,0.1); z-index: 10;
 }
-.progress-bar { height: 100%; background: #00C3FF; transition: width 1s ease; box-shadow: 0 0 10px #00C3FF; }
+.progress-bar { height: 100%; background: var(--blue); transition: width 1s ease; box-shadow: 0 0 10px rgba(0,152,220,0.5); }
 
 /* ============================================================
    核心舞台 (视觉中心)
@@ -307,23 +287,23 @@ onUnmounted(() => clearTimers());
   display: flex; align-items: center; justify-content: center;
 }
 
-/* 巨大的罗盘圆环 */
+/* 巨大的罗盘圆环 (深灰/黑色线条) */
 .rings {
   position: absolute; width: min(80vw, 600px); height: min(80vw, 600px); z-index: 1;
-  opacity: 0.3; transition: opacity 1s ease;
+  opacity: 0.4; transition: opacity 1s ease;
 }
 .ring { transform-origin: 200px 200px; fill: none; }
-.ring-outer circle { stroke: #333; stroke-width: 1; stroke-dasharray: 10 20; animation: spin 40s linear infinite; }
-.ring-mid circle { stroke: #00C3FF; stroke-width: 1; stroke-dasharray: 100 400; animation: spinRev 20s linear infinite; opacity: 0.5; }
-.ring-inner circle { stroke: #444; stroke-width: 2; animation: spin 15s linear infinite; }
-.ring-ticks circle { stroke: #555; stroke-width: 2; }
+.ring-outer circle { stroke: var(--line-strong); stroke-width: 1; stroke-dasharray: 10 20; animation: spin 40s linear infinite; opacity: 0.3;}
+.ring-mid circle { stroke: var(--blue); stroke-width: 1.5; stroke-dasharray: 100 400; animation: spinRev 20s linear infinite; opacity: 0.6; }
+.ring-inner circle { stroke: var(--fg); stroke-width: 2; animation: spin 15s linear infinite; opacity: 0.2;}
+.ring-ticks circle { stroke: var(--line-strong); stroke-width: 2; opacity: 0.1; }
 
 /* 状态机控制圆环高亮 */
 .is-auth_wait .rings { opacity: 0.8; }
 .is-auth_scanning .rings { opacity: 1; }
-.is-welcome .rings { opacity: 0.5; }
+.is-welcome .rings { opacity: 0.4; }
 
-/* 中央大标题 */
+/* 中央大标题 (粗黑体) */
 .center-text {
   position: absolute; z-index: 5; text-align: center; pointer-events: none;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
@@ -331,62 +311,60 @@ onUnmounted(() => clearTimers());
 }
 .welcome-title {
   font-family: var(--font-sans); font-size: clamp(24px, 4vw, 36px);
-  font-weight: 900; letter-spacing: 0.3em; color: #FFF;
-  text-shadow: 0 0 20px rgba(0,0,0,0.8);
+  font-weight: 900; letter-spacing: 0.3em; color: var(--fg);
 }
 .sub-title {
-  font-size: 10px; letter-spacing: 0.5em; color: #666; text-transform: uppercase;
+  font-size: 10px; letter-spacing: 0.5em; color: var(--fg-dim); text-transform: uppercase; font-weight: 700;
 }
 
-/* 在验证阶段把中间的字变小并往上顶 */
 .is-auth_wait .center-text { transform: translateY(-120px); }
 .is-auth_scanning .center-text { transform: translateY(-120px); }
 .is-welcome .center-text { transform: translateY(0); }
 
 /* ============================================================
-   身份验证弹窗 (斜切角、工业感)
+   身份验证弹窗 (亮色工业卡片，斜切角)
    ============================================================ */
 .auth-card {
   position: absolute; z-index: 10;
-  width: min(90vw, 380px); background: rgba(15, 18, 20, 0.9);
-  backdrop-filter: blur(10px); border: 1px solid rgba(0, 195, 255, 0.3);
+  width: min(90vw, 380px); background: var(--surface);
+  border: 1px solid var(--fg);
   /* 模拟斜切角 */
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,195,255,0.1);
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.05); /* 实体阴影 */
   display: flex; flex-direction: column;
 }
 .auth-head {
-  background: rgba(0, 195, 255, 0.1); color: #00C3FF;
-  padding: 8px 16px; font-size: 10px; letter-spacing: 1px;
-  display: flex; justify-content: space-between; border-bottom: 1px solid rgba(0, 195, 255, 0.2);
+  background: var(--fg); color: var(--surface);
+  padding: 8px 16px; font-size: 10px; letter-spacing: 1px; font-weight: 700;
+  display: flex; justify-content: space-between;
 }
 .auth-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 
-.auth-row { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dashed #333; padding-bottom: 8px; }
-.a-key { color: #666; }
-.a-val { color: #FFF; font-weight: 700; letter-spacing: 1px; }
+.auth-row { display: flex; justify-content: space-between; font-size: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+.a-key { color: var(--fg-dim); font-weight: 700; }
+.a-val { color: var(--fg); font-weight: 900; letter-spacing: 1px; }
 
 /* 终端日志输出 */
 .auth-log {
-  height: 70px; font-size: 10px; color: #00C3FF; overflow: hidden;
+  height: 70px; font-size: 10px; color: var(--blue); font-weight: 700; overflow: hidden;
   display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
 }
 .log-line { animation: typeIn 0.3s ease-out; }
 @keyframes typeIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
 
-/* 验证进度条 */
-.auth-bar { height: 4px; background: #222; width: 100%; margin-top: 4px; }
-.bar-fill { height: 100%; background: #00C3FF; transition: width 0.1s linear; box-shadow: 0 0 10px #00C3FF; }
+/* 验证进度条 (极细) */
+.auth-bar { height: 2px; background: var(--line); width: 100%; margin-top: 4px; }
+.bar-fill { height: 100%; background: var(--blue); transition: width 0.1s linear; }
 
-/* 按钮 */
+/* 按钮 (黑底白字反色) */
 .auth-btn {
   margin-top: 10px; padding: 12px; background: transparent;
-  border: 1px solid #FFF; color: #FFF; font-family: var(--font-mono); font-size: 12px;
+  border: 1px solid var(--fg); color: var(--fg); font-family: var(--font-mono); font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; letter-spacing: 2px;
 }
-.auth-btn:hover:not(.disabled) { background: #FFF; color: #000; }
-.auth-btn.disabled { border-color: #333; color: #555; cursor: not-allowed; }
-.auth-btn.success { border-color: #00C3FF; color: #00C3FF; background: rgba(0,195,255,0.1); }
+.auth-btn:hover:not(.disabled) { background: var(--fg); color: var(--surface); }
+.auth-btn.disabled { border-color: var(--line); color: var(--fg-dim); cursor: not-allowed; }
+.auth-btn.success { border-color: var(--blue); color: var(--blue); background: rgba(0, 152, 220, 0.05); }
 
 /* 弹窗过渡动画 */
 .pop-enter-active { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
