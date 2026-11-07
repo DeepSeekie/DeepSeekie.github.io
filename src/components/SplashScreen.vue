@@ -5,12 +5,12 @@
     <div class="bg-grid"></div>
     <div class="bg-halftone"></div>
     
-    <!-- 背景流动数据流 -->
+    <!-- 背景流动数据流 (冷青色细线) -->
     <div class="bg-data-stream">
       <div class="stream-line" v-for="i in 5" :key="i" :style="{ top: `${i * 20}%`, animationDelay: `${i * -2}s` }"></div>
     </div>
 
-    <!-- 2. HUD: 左上角系统信息 -->
+    <!-- 2. HUD: 左上角系统信息 (AGI设定) -->
     <div class="hud-corner hud-tl">
       <div class="hl-title">DEEPSEEK // AGI_CORE</div>
       <div class="hl-data">NODE: OMNI-01</div>
@@ -43,7 +43,9 @@
       <div class="progress-bar" :style="{ width: progressWidth }"></div>
     </div>
 
+    <!-- ========================================== -->
     <!-- 核心视觉区 -->
+    <!-- ========================================== -->
     <div class="splash-stage" :class="'is-' + phase">
       
       <!-- 巨大的底层罗盘/圆环 -->
@@ -56,33 +58,33 @@
 
       <!-- 中央文字信息 -->
       <div class="center-text">
-        <div class="welcome-title" v-if="phase === 'boot'">正 在 唤 醒 核 心</div>
-        <div class="welcome-title" v-if="phase === 'system_check'">意 识 矩 阵 接 入</div>
+        <div class="welcome-title" v-if="phase === 'boot' || phase === 'system_check'">意 识 矩 阵 接 入</div>
         <div class="welcome-title" v-if="phase === 'auth_wait' || phase === 'auth_scanning'">AGI 核 心 握 手</div>
         <div class="welcome-title text-cyan" v-if="phase === 'welcome'">全 知 权 限 解 锁</div>
         
         <div class="sub-title">
           {{ phase === 'welcome' ? 'OMNISCIENCE UNLOCKED' : 'COGNITIVE MATRIX UPLINK' }}
         </div>
-        <div class="hint-tap blink" v-if="phase === 'system_check'">>> 点击任意位置 唤醒验证协议 <<</div>
       </div>
 
-      <!-- 身份验证弹窗 (中文化) -->
+      <!-- ========================================== -->
+      <!-- 身份验证弹窗 (AGI 创世者协议) -->
+      <!-- ========================================== -->
       <transition name="pop">
         <div class="auth-card" v-if="phase === 'auth_wait' || phase === 'auth_scanning' || phase === 'welcome'">
           <div class="auth-head">
-            <div>// 身份验证协议 (IDENTITY_PROTOCOL)</div>
-            <div>[ 安全 ]</div>
+            <div>// IDENTITY_PROTOCOL</div>
+            <div>[ AGI_SECURE ]</div>
           </div>
           <div class="auth-body">
             <div class="auth-row">
-              <span class="a-key">身份</span>
-              <span class="a-val">创世者_01</span>
+              <span class="a-key">ID</span>
+              <span class="a-val">CREATOR_01</span>
             </div>
             <div class="auth-row">
-              <span class="a-key">状态</span>
+              <span class="a-key">STATUS</span>
               <span class="a-val" :class="{ 'text-cyan': phase === 'welcome' }">
-                {{ phase === 'auth_wait' ? '等待确认_' : (phase === 'auth_scanning' ? '同步中_' : '全知全能') }}
+                {{ phase === 'auth_wait' ? 'AWAITING_TAP_' : (phase === 'auth_scanning' ? 'SYNCING_' : 'OMNIPOTENT') }}
               </span>
             </div>
             
@@ -98,13 +100,13 @@
 
             <!-- 按钮逻辑 -->
             <button class="auth-btn" v-if="phase === 'auth_wait'" @click.stop="startScan">
-              [ 发起链路握手 ]
+              [ INITIATE_UPLINK ]
             </button>
             <button class="auth-btn disabled" v-else-if="phase === 'auth_scanning'">
-              [ 正在同步... ]
+              [ SYNCHRONIZING... ]
             </button>
             <button class="auth-btn success" v-else-if="phase === 'welcome'" @click.stop="enterSystem">
-              [ 进入全知宇宙 ]
+              [ ENTER_OMNIVERSE ]
             </button>
           </div>
         </div>
@@ -186,14 +188,8 @@ const enterSystem = () => {
   setTimeout(() => emit('done'), 800);
 };
 
-// 改造交互逻辑：不让它自动弹窗，全凭用户点击推进
 const onTap = () => {
-  if (phase.value === 'system_check') {
-    // 用户在自检阶段点击，召唤验证窗口
-    phase.value = 'auth_wait';
-    systemStatus.value = 'AWAITING_CREATOR';
-    progressWidth.value = '50%';
-  } else if (phase.value === 'auth_wait') {
+  if (phase.value === 'auth_wait') {
     startScan();
   } else if (phase.value === 'welcome') {
     enterSystem();
@@ -201,27 +197,42 @@ const onTap = () => {
 };
 
 onMounted(() => {
-  // 仅保留开机动画自动进入 system_check
   timers.push(setTimeout(() => {
     systemStatus.value = 'SELF_TEST_PASS';
     progressWidth.value = '30%';
     phase.value = 'system_check';
-    // 注意：这里去掉了 3 秒后自动进入 auth_wait 的定时器！
   }, 1500));
+
+  timers.push(setTimeout(() => {
+    systemStatus.value = 'AWAITING_CREATOR';
+    progressWidth.value = '50%';
+    phase.value = 'auth_wait';
+  }, 3000));
 });
 
 onUnmounted(() => clearTimers());
 </script>
 
 <style scoped>
-/* 调色板与样式完全保持不变 */
+/* ============================================================
+   0. 深灰工业调色板
+   ============================================================ */
 #splash {
-  --bg-deep: #15171A; --bg-surface: #0D0E10; --bg-elevated: #1C1F24;
-  --line-faint: rgba(255, 255, 255, 0.08); --line-mid: rgba(255, 255, 255, 0.15); --line-strong: rgba(255, 255, 255, 0.3);
-  --text-main: #E2E4E8; --text-dim: #8A9099; --text-faint: #555A63;
-  --accent-cyan: #2CD3E1; --accent-amber: #E6A23C; --accent-cyan-soft: rgba(44, 211, 225, 0.15);
-  position: fixed; inset: 0; z-index: 100; background: var(--bg-deep); color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; cursor: pointer; overflow: hidden; font-family: var(--font-mono, "SFMono-Regular", Consolas, monospace);
+  --bg-deep: #15171A;
+  --bg-surface: #0D0E10;
+  --bg-elevated: #1C1F24;
+  --line-faint: rgba(255, 255, 255, 0.08);
+  --line-mid: rgba(255, 255, 255, 0.15);
+  --line-strong: rgba(255, 255, 255, 0.3);
+  --text-main: #E2E4E8;
+  --text-dim: #8A9099;
+  --text-faint: #555A63;
+  --accent-cyan: #2CD3E1;
+  --accent-amber: #E6A23C;
+  --accent-cyan-soft: rgba(44, 211, 225, 0.15);
 }
+
+#splash { position: fixed; inset: 0; z-index: 100; background: var(--bg-deep); color: var(--text-main); display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; cursor: pointer; overflow: hidden; font-family: var(--font-mono, "SFMono-Regular", Consolas, monospace); }
 #splash.is-leaving { opacity: 0; pointer-events: none; }
 .bg-grid { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
 .bg-halftone { position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image: radial-gradient(circle, rgba(255,255,255,0.04) 0.5px, transparent 0.5px); background-size: 4px 4px; opacity: 0.7; }
@@ -250,7 +261,6 @@ onUnmounted(() => clearTimers());
 .center-text { position: absolute; z-index: 5; text-align: center; pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 12px; transition: transform 0.5s ease; }
 .welcome-title { font-family: var(--font-sans, sans-serif); font-size: clamp(24px, 4vw, 36px); font-weight: 900; letter-spacing: 0.3em; color: var(--text-main); }
 .sub-title { font-size: 10px; letter-spacing: 0.5em; color: var(--text-dim); text-transform: uppercase; font-weight: 700; }
-.hint-tap { font-size: 12px; color: var(--accent-cyan); margin-top: 20px; letter-spacing: 2px; }
 .is-auth_wait .center-text { transform: translateY(-120px); } .is-auth_scanning .center-text { transform: translateY(-120px); } .is-welcome .center-text { transform: translateY(0); }
 .auth-card { position: absolute; z-index: 10; width: min(90vw, 380px); background: var(--bg-surface); border: 1px solid var(--line-mid); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%); box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255,255,255,0.02); display: flex; flex-direction: column; }
 .auth-head { background: var(--bg-elevated); color: var(--accent-cyan); border-bottom: 1px solid var(--line-mid); padding: 8px 16px; font-size: 10px; letter-spacing: 1px; font-weight: 700; display: flex; justify-content: space-between; }
