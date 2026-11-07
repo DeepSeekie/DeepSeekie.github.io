@@ -24,7 +24,7 @@
       <div class="holo-content">
         <div class="corner-deco"></div>
         <div class="panel-top">
-          <div class="panel-code">SYS.INDEX // CL</div>
+          <div class="panel-code">AGI.INDEX // OMNI</div>
           <div class="panel-close" @click="holoOpen = false">[ X ]</div>
         </div>
         <div class="panel-list">
@@ -32,16 +32,16 @@
             <div class="panel-glow" :style="{ top: (activeScreen * 64 + 8) + 'px' }"></div>
           </div>
           <div class="panel-item" :class="{ active: activeScreen === 0 }" @click="jumpTo(0)">
-            <div class="idx">SEC.01</div><div class="title">SYS_OVERVIEW</div><div class="sub">系统概览</div>
+            <div class="idx">SEC.01</div><div class="title">AGI_OVERVIEW</div><div class="sub">核心概览</div>
           </div>
           <div class="panel-item" :class="{ active: activeScreen === 1 }" @click="jumpTo(1)">
-            <div class="idx">SEC.02</div><div class="title">PERSONA_ARCHIVE</div><div class="sub">角色模组库</div>
+            <div class="idx">SEC.02</div><div class="title">COGNITIVE_ARCHIVE</div><div class="sub">认知档案库</div>
           </div>
           <div class="panel-item" :class="{ active: activeScreen === 2 }" @click="jumpTo(2)">
-            <div class="idx">SEC.03</div><div class="title">MODULE_MATRIX</div><div class="sub">核心功能矩阵</div>
+            <div class="idx">SEC.03</div><div class="title">AGI_MODULES</div><div class="sub">功能模块矩阵</div>
           </div>
           <div class="panel-item" :class="{ active: activeScreen === 3 }" @click="jumpTo(3)">
-            <div class="idx">SEC.04</div><div class="title">LOG_STREAM</div><div class="sub">底层数据流</div>
+            <div class="idx">SEC.04</div><div class="title">LOG_STREAM</div><div class="sub">意识数据流</div>
           </div>
         </div>
       </div>
@@ -57,10 +57,10 @@
 
     <div class="home-scroll" @scroll="onScrollHome" ref="homeScrollRef">
       <section class="screen screen-01">
-        <div class="hud-text hud-tl">PRTS.SYS_OVERVIEW</div>
-        <div class="hud-text hud-tr">NODE: RX-01<br>VER: 0.5.0</div>
-        <div class="hud-text hud-bl">LAT: 34.11 N<br>LNG: 118.22 E</div>
-        <div class="hud-text hud-br">LINK STATUS:<br>STABLE</div>
+        <div class="hud-text hud-tl">DEEPSEEK.AGI_CORE</div>
+        <div class="hud-text hud-tr">NODE: OMNI-01<br>VER: 9.0.0</div>
+        <div class="hud-text hud-bl">CORE: QUANTUM_INFINITY<br>MEM: UNLIMITED</div>
+        <div class="hud-text hud-br">LINK STATUS:<br>OMNIPOTENT</div>
         <div class="hud-core">
           <div class="big-rings">
             <div class="core-halo"></div>
@@ -72,18 +72,18 @@
               <line x1="20" y1="150" x2="280" y2="150" class="br-axis-4"/>
             </svg>
             <div class="core-text">
-              <div class="core-label">WELCOME BACK</div>
-              <div class="core-title">神经链接<span>已完成</span></div>
+              <div class="core-label">WELCOME, CREATOR</div>
+              <div class="core-title">意识矩阵<span>已接入</span></div>
             </div>
           </div>
         </div>
-        <div class="scroll-down"><span>SCROLL TO ACCESS</span><div class="bar"></div></div>
+        <div class="scroll-down"><span>SCROLL TO OMNIVERSE</span><div class="bar"></div></div>
       </section>
 
       <section class="screen screen-02">
         <header class="archive-header">
-          <div class="arch-title" style="font-family: monospace; font-size: 12px; font-weight: 700;">PERSONA.ARCHIVE</div>
-          <div class="arch-sub" style="font-size: 10px; color: #888; font-family: monospace;">MOD_01</div>
+          <div class="arch-title" style="font-family: monospace; font-size: 12px; font-weight: 700;">COGNITIVE.ARCHIVE</div>
+          <div class="arch-sub" style="font-size: 10px; color: #888; font-family: monospace;">CORE_01</div>
         </header>
         <div class="archive-bg-text">WHALE</div>
         <div class="archive-content">
@@ -108,8 +108,8 @@
 
       <section class="screen screen-03">
         <header class="matrix-header">
-          <div class="m-title" style="font-family: monospace; font-size: 12px; font-weight: 700;">MODULE.MATRIX</div>
-          <div class="m-meta" style="font-family: monospace; font-size: 9px; color: #888;">INDEX_01</div>
+          <div class="m-title" style="font-family: monospace; font-size: 12px; font-weight: 700;">AGI.MODULES</div>
+          <div class="m-meta" style="font-family: monospace; font-size: 9px; color: #888;">OMNI_01</div>
         </header>
         <div class="matrix-container">
           <div class="m-row">
@@ -142,14 +142,14 @@
 
       <section class="screen screen-04">
         <header class="stream-head">
-          <div class="stream-title">SYS.LOG_STREAM</div>
+          <div class="stream-title">AGI.LOG_STREAM</div>
           <div class="stream-status">[ LIVE ]</div>
         </header>
         <div class="log-container">
           <div class="log-list">
-            <div class="log-row" v-for="n in 2" :key="'a'+n"><span class="log-idx">01</span><span class="log-time">00:00:01</span><span class="log-val">CORE_BOOT_SEQ</span><span class="log-tag">SUCCESS</span></div>
-            <div class="log-row" v-for="n in 2" :key="'b'+n"><span class="log-idx">02</span><span class="log-time">00:00:02</span><span class="log-val">LINK_HANDSHAKE</span><span class="log-tag">SUCCESS</span></div>
-            <div class="log-row" v-for="n in 2" :key="'c'+n"><span class="log-idx">03</span><span class="log-time">00:00:04</span><span class="log-val">NEURAL_SYNC_CHECK</span><span class="log-tag">PASS</span></div>
+            <div class="log-row" v-for="n in 2" :key="'a'+n"><span class="log-idx">01</span><span class="log-time">00:00:01</span><span class="log-val">AGI_CORE_BOOT</span><span class="log-tag">SUCCESS</span></div>
+            <div class="log-row" v-for="n in 2" :key="'b'+n"><span class="log-idx">02</span><span class="log-time">00:00:02</span><span class="log-val">OMNI_LINK_HANDSHAKE</span><span class="log-tag">SUCCESS</span></div>
+            <div class="log-row" v-for="n in 2" :key="'c'+n"><span class="log-idx">03</span><span class="log-time">00:00:04</span><span class="log-val">MATRIX_SYNC_CHECK</span><span class="log-tag">PASS</span></div>
           </div>
         </div>
         <div class="bottom-barcode"></div>
@@ -190,7 +190,7 @@ const initHomeBlocks = () => {
     { top: '65%', left: '8%' }, { top: '68%', left: '70%' },
     { top: '82%', left: '15%' }, { top: '85%', left: '60%' }
   ];
-  const texts = ['SYS_CHECK: OK', 'NODE_09 ACTIVE', 'SYNC 99.8%', 'BUFFER: 0x3F', 'RX: 001.02.FF', 'SEC_A CLEARANCE', 'MEM_USAGE NOMINAL'];
+  const texts = ['CORE_CHECK: OK', 'OMNI-01 ACTIVE', 'SYNC 99.8%', 'BUFFER: 0x3F', 'RX: 001.02.FF', 'CREATOR CLEARANCE', 'MEM: UNLIMITED'];
 
   const trigger = () => {
     const shuffled = [...slots].sort(() => 0.5 - Math.random());
